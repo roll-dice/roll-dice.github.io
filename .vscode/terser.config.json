@@ -1,0 +1,25 @@
+{
+    "toplevel": true,
+    "parse": {
+        "bare_returns": false,
+        "ecma": 2020
+    },
+    "compress": {
+        "booleans_as_integers": true,
+        "drop_console": true,
+        "drop_debugger": true,
+        "ecma": 2020,
+        "passes": 3,
+        "toplevel": true
+    },
+    "mangle": {
+        "eval": true,
+        "module": true,
+        "toplevel": true
+    },
+    "output": {
+        "ecma": 2020,
+        "comments": false
+    },
+    "sourceMap": false
+}

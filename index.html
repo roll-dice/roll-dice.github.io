@@ -11,16 +11,22 @@
             }
     </script>
     <script type="module" src="./element.js"></script>
-    <!-- <script src="https://threejs.org/build/three.js"></script> -->
-    <script type="module" src="https://threejs.org/examples/jsm/controls/OrbitControls.js"></script>
-    
+
+    <style>
+        body {
+            background: lightgreen;
+            background-image: url('./background_backgammon.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+    </style>
 </head>
 
 <body>
     <my-element></my-element>
 
     <div class="content">
-        <canvas id="canvas" style="width:90vw;height:90vh;background:pink" ></canvas>
+        <canvas id="canvas" style="width:90vw;height:90vh;bxackground:pink"></canvas>
         <div class="ui-controls">
             <div class="score">Score: <span id="score-result"></span></div>
             <button id="roll-btn">Throw the dice</button>
