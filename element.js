@@ -1,21 +1,5 @@
 var DEBUG = 0;
 
-// Promise.all([
-//     "//threejs.org/build/three.module.js",
-//     "//threejs.org/examples/jsm/utils/BufferGeometryUtils.js",
-//     "//cdn.skypack.dev/cannon-es",
-// ].map((module, index) => import(module)),
-// ).then((modules) => {
-//     console.log("loaded", modules.map(m => console.log(m)));
-//     document.dispatchEvent(new CustomEvent("LibrariesLoaded",{
-//         detail: {
-//             THREE: modules[0],
-//             BufferGeometryUtils: modules[1],
-//             CANNON: modules[2],
-//         }
-//     }));
-// });
-
 import * as CANNON from 'https://cdn.skypack.dev/cannon-es';
 //import * as THREE from 'https://unpkg.com/three@latest/build/three.module.js';
 //import * as BufferGeometryUtils from 'https://unpkg.com/three@latest/examples/jsm/utils/BufferGeometryUtils.js';
@@ -24,76 +8,19 @@ import * as BufferGeometryUtils from './dependencies/BufferGeometryUtils.js';
 //import * as CANNON from './dependencies/cannon-es.js';
 
 customElements.define("roll-dice", class extends HTMLElement {
-    onRollComplete(rollResult) {
-        this.values = rollResult[0].rolls.map(({
-            sides,
-            rollId,
-            value
-        }) => value);
-        console.log('roll results', this.values);
-    }
-    onDieComplete(dieResult) {
-        //console.log('die result', dieResult);
-    }
     connectedCallback() {
         // create a unique ID, but using a DOM Node in the constructor would be nicer
         let id = ("dice-box" + Math.random()).replaceAll(".", "");
-        let origin = "https://unpkg.com/@3d-dice/dice-box@1.0.8/dist/";
-        let src = origin + "dice-box.es.min.js";
-        // listen for loaded ES module
-        let listener = document.addEventListener(id, (evt) => {
-            // now evt.detail is the DiceBox class
-            document.removeEventListener(id, listener);
-            if (!this.DiceBox) {
-                this.DiceBox = Object.assign(new evt.detail( // new DiceBox
-                    "#" + id, // would be nice to use a DOM Node here
-                    {
-                        offscreen: true,
-                        assetPath: "assets/",
-                        origin,
-                        theme: "default",
-                        // themeColor doesn't accept HTML color names
-                        themeColor: this.getAttribute("color") || "#f5793a",
-                        scale: this.getAttribute("scale") || 15,
-                        delay: this.getAttribute("delay") || 100,
-                        enableShadows: !this.hasAttribute("noshadow"),
-                        //suspendSimulation:true // doesn't work, returns NaN
-                    }), {
-                    onDieComplete: this.onDieComplete.bind(this),
-                    onRollComplete: this.onRollComplete.bind(this)
-                });
-                this.DiceBox.init().then((world) => {
-                }); // new DiceBox
-            } // if
-        }); // listener
-        // jump thru some hoops to import a module and get its (default)export
-        // dispatch an Event so the correct <roll-dice> element is processed
-        document.head.append(
-            Object.assign(
-                document.createElement("script"), {
-                type: "module",
-                innerHTMLorg: `import('${src}').then((module) => {
-              	document.dispatchEvent(new CustomEvent("${id}", 
-                  {detail: module.default}));
-  						});`,
-                in2nerHTML: `Promise.all([
-                ""
-            ].map((module, index) => import('${module}')),
-              ).then((modules) => console.log("loaded",modules));`
-            }
-            )
-        );
-        this.innerHTML = `<style>#${id} canvas{width:100%;height:100%}</style>` +
-            `<div id="${id}"/>`;
-        // roll the dice again
+        this.innerHTML = `<canvas id="canvas" style="width:90vw;height:90vh"></canvas>
+        <div class="ui-controls">
+            <div class="score">Score: <span id="score-result"></span></div>
+            <button id="roll-btn">Throw the dice</button>
+        </div>`;
         this.onclick = (e) => this.roll();
     }
     // Method .roll
-    roll(dice = {
-        qty: this.getAttribute("count") || 5,
-        sides: ~~(this.getAttribute("sides") || 6)
-    }) {
-        this.DiceBox.roll(dice);
+    roll() {
+        
     }
 })
 
