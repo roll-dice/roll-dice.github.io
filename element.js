@@ -17,8 +17,11 @@ var DEBUG = 0;
 // });
 
 import * as CANNON from 'https://cdn.skypack.dev/cannon-es';
-import * as THREE from 'three';
-import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+//import * as THREE from 'https://unpkg.com/three@latest/build/three.module.js';
+//import * as BufferGeometryUtils from 'https://unpkg.com/three@latest/examples/jsm/utils/BufferGeometryUtils.js';
+import * as THREE from './dependencies/three.min.js';
+import * as BufferGeometryUtils from './dependencies/BufferGeometryUtils.js';
+//import * as CANNON from './dependencies/cannon-es.js';
 
 customElements.define("roll-dice", class extends HTMLElement {
     onRollComplete(rollResult) {
@@ -131,12 +134,10 @@ function INITDICE({
 
     var dotColor = "black";
     var diceDotOffset = .485; // how far the inner BLACK dots are from the center of the dice
-    var diceSegments = 40; // 40-60
+    var diceSegments = 28; // 25-60 more segments is more mesh, better quality
     var diceEdgeRadius = .13; // .13-.2 rounded corners of the dice
-    var diceParams = {
-        notchRadius: .13,
-        notchDepth: .13,
-    };
+    var diceNotchRadius = .13; // .13 higher is dots touching eachother on 6 dice
+    var diceNotchDepth = .13; // .13 more depth is more/wider black dot
 
     // where the dice are thrown from and to
     var dropHeight = 6; // default:6 higher values throw dice outside the 4 walls
@@ -151,9 +152,10 @@ function INITDICE({
     ];
 
     // where the dice are positioned after the throw
-    var alignedDiceHeight = 4;
-    var alignedDiceOffsetX = .5;
-    var alignedDiceOffsetZ = 1;
+    var selectedDiceOffsetX = [-1, -.5, 0, .5, 1];
+    var alignedDiceX = [-2.5, -1, 0.5, 2, 3.5];
+    var alignedDiceY = 4;
+    var alignedDiceZ = 1;
 
     // physics parameters
     var body_mass = 2;
@@ -214,6 +216,7 @@ function INITDICE({
                 ) => {
                     this.animating = true;
                     setTimeout(() => this.animating = false, timeout_moveTo);
+                    //this.colorByValue({ color: "green", value: 0 });
                     var A = () => {
                         var toTarget = vector.clone().sub(P); // Calculate the vector from the dice to the target
                         if (this.animating && toTarget.length() >= 1) { // If the dice is not close enough to the target, move it
@@ -223,6 +226,7 @@ function INITDICE({
                         } else { // If the dice is close enough to the target, stop moving it
                             this.animating = false;
                             P.copy(vector);
+                            console.warn(this.value, "y", body.id, "P:",P);
                         }
                         render_scene()
                     }
@@ -250,14 +254,14 @@ function INITDICE({
                     this.color = this.selected ? diceSelectedColor : diceColor;
                     this.moveTo({
                         x: this.selected
-                            ? P.x + [-1, -.5, 0, .5, 1][this.sortidx]
-                            : [-3, -1.5, 0, 1.5, 3][this.sortidx] + alignedDiceOffsetX,
+                            ? P.x + selectedDiceOffsetX[this.sortidx]
+                            : alignedDiceX[this.sortidx],
                         y: this.selected
                             ? 0
-                            : alignedDiceHeight,
+                            : alignedDiceY,
                         z: this.selected
-                            ? 0
-                            : 0 + alignedDiceOffsetZ
+                            ? -3
+                            : alignedDiceZ
                     })
                     // render_scene();
                 },
@@ -348,15 +352,29 @@ function INITDICE({
 
             });// Object.assign(this,{})
         }
+        get sideorder() {
+            return [2, 5, 1, 6, 3, 4];
+        }
         get material() {
-            return this.mesh.children[1].material;
+            return this.mesh.children[1].material; // returns array for dice values 2,5,1,6,3,4
         }
         get color() {
             return this.material.color;
         }
         set color(color = "white") {
-            this.material.color.set(color);
+            var material = this.material;
+            if (Array.isArray(material)) {
+                material.forEach(side => side.color.set(color));
+            } else this.material.color.set(color);
             //render_scene();
+        }
+        colorByValue({ color = diceColor, value = this.value }) {
+            var side = this.sideorder.indexOf(value);
+            if (value && side) { // value=0 colors whole die
+                this.material[side].color.set(color);
+            } else {
+                this.color = color;
+            }
         }
     }
 
@@ -414,7 +432,6 @@ function INITDICE({
 
         if (showHelpers) {
             scene.add(new THREE.AxesHelper(wallHeight));
-            raylineView();
         }
         addWalls();
         // addRay();
@@ -497,34 +514,6 @@ function INITDICE({
         render_scene();
     }
 
-    function raylineView() {
-        var line;
-        var raycast = new THREE.Raycaster();
-        var intersectPoint = THREE_Vector3();
-        canvas.addEventListener('mousemove', function (event) {
-            // Normalize mouse position to -1 to 1 range
-            var mouse = THREE_Vector2();
-            var rect = event.target.getBoundingClientRect(); // Get the bounding box of the canvas
-            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-            // Update the picking ray with the camera and mouse position
-            raycast.setFromCamera(mouse, camera);
-            // Calculate the intersection of the ray with a plane at y = 0 (the floor)
-            var planeHeight = alignedDiceHeight;
-            var intersects = raycast.ray.intersectPlane(
-                new THREE.Plane(
-                    THREE_Vector3(0, 1, 0), // 
-                    planeHeight // Height (y) of the plane
-                ),
-                intersectPoint // point where the ray intersects the plane
-            );
-            // If the ray intersects the plane
-            if (intersects) {
-                line && line.removeFromParent();
-                line = addLine(intersectPoint.x, planeHeight + 1, intersectPoint.z);
-            }
-        });
-    }
 
     function addLine(x, y, z = 0) {
         var geometry = new THREE.BufferGeometry();// Create a BufferGeometry
@@ -614,28 +603,9 @@ function INITDICE({
         world.addBody(floorBody);
     }
 
-    function createDiceMesh() {
-        var boxMaterialOuter = new THREE.MeshStandardMaterial({
-            color: diceColor,
-            //wireframe:true   
-        })
-        var boxMaterialInner = new THREE.MeshStandardMaterial({
-            color: dotColor,
-            roughness: 0,
-            metalness: 1,
-            side: THREE.DoubleSide,
-        })
-        var diceMesh = new THREE.Group();
-        var innerMesh = new THREE.Mesh(createInnerGeometry(), boxMaterialInner);
-        var outerMesh = new THREE.Mesh(createBoxGeometry(), boxMaterialOuter);
-        //innerMesh.castShadow = true;
-        outerMesh.castShadow = true;
-        diceMesh.add(innerMesh, outerMesh);
-        return diceMesh;
-    }
-
     function createBoxGeometry() {
-        var boxGeometry = new THREE.BoxGeometry(1, 1, 1, diceSegments, diceSegments, diceSegments);
+        var size = 1; // 1
+        var boxGeometry = new THREE.BoxGeometry(size, size, size, diceSegments, diceSegments, diceSegments);
         var positionAttr = boxGeometry.attributes.position;
         var subCubeHalfSize = .5 - diceEdgeRadius;
         for (var i = 0; i < positionAttr.count; i++) {
@@ -662,12 +632,12 @@ function INITDICE({
                 position.z = subCube.z + addition.z;
             }
             var notchWave = (v) => {
-                v = (1 / diceParams.notchRadius) * v;
+                v = (1 / diceNotchRadius) * v;
                 v = Math.PI * Math.max(-1, Math.min(1, v));
-                return diceParams.notchDepth * (Math.cos(v) + 1.);
+                return diceNotchDepth * (Math.cos(v) + 1);
             }
             var notch = (pos) => notchWave(pos[0]) * notchWave(pos[1]);
-            var offset = .25;
+            var offset = .25; // spread dots on side
             if (position.y === .5) {
                 position.y -= notch([position.x, position.z]);
             } else if (position.x === .5) {
@@ -716,7 +686,30 @@ function INITDICE({
             baseGeometry.clone().rotateX(.5 * Math.PI).translate(0, -diceDotOffset, 0), // side 6
         ], false);
     }
-
+    function createDiceMesh() {
+        var wireframe = false;
+        var boxMaterialOuter = [
+            new THREE.MeshStandardMaterial({ color: diceColor, wireframe }),
+            new THREE.MeshStandardMaterial({ color: diceColor, wireframe }),
+            new THREE.MeshStandardMaterial({ color: diceColor, wireframe }),
+            new THREE.MeshStandardMaterial({ color: diceColor, wireframe }),
+            new THREE.MeshStandardMaterial({ color: diceColor, wireframe }),
+            new THREE.MeshStandardMaterial({ color: diceColor, wireframe })
+        ];
+        var boxMaterialInner = new THREE.MeshStandardMaterial({
+            color: dotColor,
+            roughness: 0,
+            metalness: 1,
+            side: THREE.DoubleSide,
+        })
+        var diceMesh = new THREE.Group();
+        var innerMesh = new THREE.Mesh(createInnerGeometry(), boxMaterialInner);
+        var outerMesh = new THREE.Mesh(createBoxGeometry(), boxMaterialOuter);
+        //innerMesh.castShadow = true;
+        outerMesh.castShadow = true;
+        diceMesh.add(innerMesh, outerMesh);
+        return diceMesh;
+    }
     function detectWallCollisions(die) {
         die.body.addEventListener("collide", (evt) => walls.forEach(wall => {
             if (evt.body === wall) {
@@ -740,8 +733,8 @@ function INITDICE({
         } else {
             console.log("done rolling", diceArray.map((dice, idx) => dice.value));
             alignDice();
-            d1.color = diceHighlightColor;
-            d1.select();
+            //d1.color = diceHighlightColor;
+            //d1.select();
             // d1.toFloor({
             //     y: 0,
             //     delay:2e3
@@ -753,12 +746,14 @@ function INITDICE({
         diceArray
             .sort((a, b) => a.mesh.position.x - b.mesh.position.x)
             .forEach((die, idx) => {
+                die.selected = false;
+                die.color = diceColor;
                 die.sortidx = idx;
                 die.moveTo({
                     // The desired Y positions for the dice, evenly spaced,
-                    x: [-3, -1.5, 0, 1.5, 3][idx] + alignedDiceOffsetX,
-                    y: alignedDiceHeight,
-                    z: 0 + alignedDiceOffsetZ
+                    x: alignedDiceX[idx],
+                    y: alignedDiceY,
+                    z: alignedDiceZ
                 });
                 let value = 6;
                 let [x, y, z] = [[0, 0, 0], [90, 90, 0], [90, 180, 0], [90, 0, 0], [90, -90, 0], [0, 0, 180]][value - 1];
@@ -788,9 +783,9 @@ function INITDICE({
     function throwDice() {
         var rand = () => 4 * Math.PI * Math.random();
         diceArray.forEach((die, idx) => {
+            var { body, mesh } = die;
             if (!die.selected) {
-
-                var { body, mesh } = die;
+                console.log("throw", body.id);
                 die.rolling = true;
                 die.hitwall = false;
                 body.velocity.setZero();
@@ -806,10 +801,11 @@ function INITDICE({
                     CANNON_Vector3(diceThrowRotation, diceThrowRotation, 0)
                 );
                 body.allowSleep = true;
+            } else {
+                console.log("hold", body.id, "value", die.value);
             }
         });
         render_rolling_dice();
-
     }
 }
 console.log("element.js loaded")
