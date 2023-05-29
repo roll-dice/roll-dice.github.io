@@ -1,11 +1,13 @@
 var DEBUG = 0;
 
+//import * as CANNON from './dependencies/cannon-es.js';
+// todo fix error CANNON.Vec3 is not a constructor
 import * as CANNON from 'https://cdn.skypack.dev/cannon-es';
+
 //import * as THREE from 'https://unpkg.com/three@latest/build/three.module.js';
 //import * as BufferGeometryUtils from 'https://unpkg.com/three@latest/examples/jsm/utils/BufferGeometryUtils.js';
 import * as THREE from './dependencies/three.min.js';
 import * as BufferGeometryUtils from './dependencies/BufferGeometryUtils.js';
-//import * as CANNON from './dependencies/cannon-es.js';
 
 customElements.define("roll-dice", class extends HTMLElement {
     connectedCallback() {
