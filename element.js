@@ -12,17 +12,13 @@ import * as BufferGeometryUtils from './dependencies/BufferGeometryUtils.js';
 customElements.define("roll-dice", class extends HTMLElement {
     connectedCallback() {
         // create a unique ID, but using a DOM Node in the constructor would be nicer
-        let id = ("dice-box" + Math.random()).replaceAll(".", "");
+        let id = "id" + Math.random() * 1e18;
         this.innerHTML = `<canvas id="canvas" style="width:90vw;height:90vh"></canvas>
-        <div class="ui-controls">
-            <div class="score">Score: <span id="score-result"></span></div>
-            <button id="roll-btn">Throw the dice</button>
-        </div>`;
+            <button id="roll-btn" style="zoom:2">Throw the dice</button>`;
         this.onclick = (e) => this.roll();
     }
-    // Method .roll
     roll() {
-        
+
     }
 })
 
@@ -136,6 +132,18 @@ function INITDICE({
             Object.assign(this, {
                 mesh: M,
                 body,
+                X: (x = 0) => {
+                    P.x = x;
+                    render_scene();
+                },
+                Y: (y = 0) => {
+                    P.y = y;
+                    render_scene();
+                },
+                Z: (z = 0) => {
+                    P.z = z;
+                    render_scene();
+                },
                 moveTo: ({
                     x = P.x,
                     y = P.y,
@@ -155,7 +163,11 @@ function INITDICE({
                         } else { // If the dice is close enough to the target, stop moving it
                             this.animating = false;
                             P.copy(vector);
-                            console.warn(this.value, "y", body.id, "P:",P);
+                            body.position.copy(vector);
+                            P.x = x;
+                            P.y = y;
+                            P.z = z;
+                            console.warn("done moveTo", body.id, "value:", this.value, "P:", P, "\n", toTarget);
                         }
                         render_scene()
                     }
@@ -189,10 +201,10 @@ function INITDICE({
                             ? 0
                             : alignedDiceY,
                         z: this.selected
-                            ? -3
+                            ? 0
                             : alignedDiceZ
                     })
-                    // render_scene();
+                    render_scene();
                 },
                 rotateTo: ({
                     x = R.x,
@@ -278,7 +290,6 @@ function INITDICE({
                         nudgeDie("landed on egde2");
                     }
                 },
-
             });// Object.assign(this,{})
         }
         get sideorder() {
@@ -376,7 +387,6 @@ function INITDICE({
     });
     canvas.addEventListener('click', (event) => {
         if (overdice) {
-            console.warn(overdice.value);
             overdice.select();
         }
     });
@@ -678,12 +688,14 @@ function INITDICE({
                 die.selected = false;
                 die.color = diceColor;
                 die.sortidx = idx;
+                console.log(1, die.value, die.mesh.position);
                 die.moveTo({
                     // The desired Y positions for the dice, evenly spaced,
                     x: alignedDiceX[idx],
                     y: alignedDiceY,
                     z: alignedDiceZ
                 });
+                console.log(2, die.value, die.mesh.position);
                 let value = 6;
                 let [x, y, z] = [[0, 0, 0], [90, 90, 0], [90, 180, 0], [90, 0, 0], [90, -90, 0], [0, 0, 180]][value - 1];
                 // die.rotateTo({
@@ -731,7 +743,7 @@ function INITDICE({
                 );
                 body.allowSleep = true;
             } else {
-                console.log("hold", body.id, "value", die.value);
+                console.warn("hold", body.id, "value", die.value, die.mesh.position);
             }
         });
         render_rolling_dice();
