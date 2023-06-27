@@ -1,4 +1,6 @@
-var DEBUG = 0;
+if (location.host == "roads-technology.nl") console.log("This code is a mess, but it works");
+
+var DEBUG = 1;
 
 //import * as CANNON from './dependencies/cannon-es.js';
 // todo fix error CANNON.Vec3 is not a constructor
@@ -15,6 +17,7 @@ customElements.define("roll-dice", class extends HTMLElement {
         let id = "id" + Math.random() * 1e18;
         this.innerHTML = `<canvas id="canvas" style="width:90vw;height:90vh"></canvas>
             <button id="roll-btn" style="zoom:2">Throw the dice</button>`;
+        INITDICE({ customElement: this, THREE, CANNON, BufferGeometryUtils });
         this.onclick = (e) => this.roll();
     }
     roll() {
@@ -23,11 +26,13 @@ customElements.define("roll-dice", class extends HTMLElement {
 })
 
 function INITDICE({
+    customElement,
     THREE,
     CANNON,
     BufferGeometryUtils
 }) {
 
+    var attr = (name, defaultValue) => customElement.getAttribute(name) || defaultValue;
     var canvas = document.querySelector('#canvas');
     var { width: canvas_width, height: canvas_height } = canvas.getBoundingClientRect();
 
@@ -38,7 +43,7 @@ function INITDICE({
 
     var showHelpers = DEBUG && 1;
 
-    var numberOfDice = 5;
+    var dicecount = ~~(attr("dicecount", 5));
     var overdice = undefined; // the DIE the cursor was last over
 
     var size = 5; // default:5
@@ -52,12 +57,12 @@ function INITDICE({
 
     // create a die with 6 sides
     var diceArray = [];
-    var diceColor = "white";
-    var diceSelectedColor = "lightgreen";
-    var diceHoverColor = "beige";
+    var diceColor = attr("dicecolor", "white");
+    var diceSelectedColor = attr("diceselectedcolor", "lightgreen");
+    var diceHoverColor = attr("dicehovercolor", "beige");
     var diceHighlightColor = "red";
 
-    var dotColor = "black";
+    var dotColor = attr("dotcolor", "black");
     var diceDotOffset = .485; // how far the inner BLACK dots are from the center of the dice
     var diceSegments = 28; // 25-60 more segments is more mesh, better quality
     var diceEdgeRadius = .13; // .13-.2 rounded corners of the dice
@@ -75,23 +80,34 @@ function INITDICE({
         [-dropDistance, dropHeight, dropDistance],
         [dropDistance, dropHeight, dropDistance],
     ];
+    var wallbase = 4;
 
     // where the dice are positioned after the throw
-    var selectedDiceOffsetX = [-1, -.5, 0, .5, 1];
-    var alignedDiceX = [-2.5, -1, 0.5, 2, 3.5];
-    var alignedDiceY = 4;
+    var selectedDiceOffsetX = [
+        0, 1, 2, 3, 4,
+        [-1, -.5, 0, .5, 1, 1.4, 1.8, 2.2],
+        6, 7,
+        [-1, -.5, 0, .5, 1, 1.4, 1.8, 2.2],
+    ][dicecount];
+    var alignedDiceX = [
+        0, 1, 2, 3, 4,
+        [-2.5, -1, 0.5, 2, 3.5],
+        6,7,
+        [-4.5, -3.1, -2, -1, .25, 1.3, 2.5, 4],
+    ][dicecount];
+    var alignedDiceY = [4, 4, 4, 4, 4, 4.1, 4, 4, 2, 9][dicecount];
     var alignedDiceZ = 1;
 
     // physics parameters
-    var body_mass = 2;
-    var gravityX = -5; // rightward Gravity
-    var gravityY = -50; // downward Gravity
-    var gravityZ = 0; // forward Gravity
+    var body_mass = attr("mass", 1.5);
+    var gravityX = attr("gravityx", -4); // rightward Gravity
+    var gravityY = -attr("gravityy", 50); // downward Gravity
+    var gravityZ = attr("gravityz", 0); // forward Gravity
     var gravity = [gravityX, gravityY, gravityZ];
-    var diceThrowImpulse = 5; // default:5 with how much Impulse force all dice are thrown 0 drops straight down
-    var diceThrowRotation = 1; // default:0.7
-    var worldBounceRestitution = 0.65; // default: 0.6 how hard the floor bounces materials, higher is more bounce, above .6 dice can forever vibrate
-    var nudgeMagnitude = 1; // Adjust this value to change the strength of the impulse
+    var diceThrowImpulse = attr("diceimpulse", 5); // default:5 with how much Impulse force all dice are thrown 0 drops straight down
+    var diceThrowRotation = attr("dicerotation", 0.6); // default:0.6
+    var worldBounceRestitution = attr("restitution", 0.6); // default: 0.6 how hard the floor bounces materials, higher is more bounce, above .6 dice can forever vibrate
+    var nudgeMagnitude = 3; // Adjust this value to change the strength of the impulse
 
     if (DEBUG) gravity[1] = -550; worldBounceRestitution = 0.06; // DEBUG values
 
@@ -179,7 +195,7 @@ function INITDICE({
                             console.error("wait for animating false", this.animating);
                             setTimeout(() => {
                                 this.moveTo({
-                                    x: P.x + [-1.5, -.5, 0, 1, 2][this.sortidx],
+                                    x: P.x + [-1.5, -.5, 0, 1, 2, 2.5, 3, 3.3][this.sortidx],
                                     y,
                                     z: 0,
                                 });
@@ -361,7 +377,7 @@ function INITDICE({
         scene.add(topLight);
 
         createFloor();
-        diceArray = Array(numberOfDice).fill(0).map((i, idx) => {
+        diceArray = Array(dicecount).fill(0).map((i, idx) => {
             var die = window["d" + (idx + 1)] = new DIE();
             diceArray.push(die);
             die.body.addEventListener('sleep', (e) => die.sleep());
@@ -380,7 +396,7 @@ function INITDICE({
     }
     // ==================================== init event listeners
     window.addEventListener('resize', updateSceneSize);
-    window.addEventListener('dblclick', throwDice);
+    customElement.addEventListener('dblclick', throwDice);
     document.querySelector('#roll-btn').onclick = throwDice;
     canvas.addEventListener('mousemove', (event) => {
         checkDieSideClick(event);
@@ -472,7 +488,6 @@ function INITDICE({
     }
 
     function addWalls() {
-        var wallbase = 3; // does this mean the walls do not go down to the floor 0 ??
         walls = [
             CANNON_Vector3(0, wallbase, wallOffset - 0.75),  // Front wall
             CANNON_Vector3(0, wallbase, -wallOffset), // Back wall
@@ -517,6 +532,7 @@ function INITDICE({
             wallMesh.quaternion.copy(wallBody.quaternion); // Copy the rotation from the Cannon.js body
             wallMesh.visible = showHelpers;
             scene.add(wallMesh);
+            //wallBody.material.restitution = .5;
             return wallBody;
         });
     }
@@ -695,11 +711,10 @@ function INITDICE({
                     y: alignedDiceY,
                     z: alignedDiceZ
                 });
-                console.log(2, die.value, die.mesh.position);
                 let value = 6;
-                let [x, y, z] = [[0, 0, 0], [90, 90, 0], [90, 180, 0], [90, 0, 0], [90, -90, 0], [0, 0, 180]][value - 1];
+                // let [x, y, z] = [[0, 0, 0], [90, 90, 0], [90, 180, 0], [90, 0, 0], [90, -90, 0], [0, 0, 180]][value - 1];
                 // die.rotateTo({
-                //     //x,
+                //     x,
                 //     y,
                 //     z
                 // });
@@ -739,7 +754,7 @@ function INITDICE({
                 body.quaternion.copy(mesh.quaternion);
                 body.applyImpulse(
                     CANNON_Vector3(-diceThrowImpulse, diceThrowImpulse, 0),
-                    CANNON_Vector3(diceThrowRotation, diceThrowRotation, 0)
+                    CANNON_Vector3(diceThrowRotation, diceThrowRotation, -diceThrowRotation)
                 );
                 body.allowSleep = true;
             } else {
@@ -751,4 +766,3 @@ function INITDICE({
 }
 console.log("element.js loaded")
 
-INITDICE({ THREE, CANNON, BufferGeometryUtils });
