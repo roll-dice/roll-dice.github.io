@@ -17,7 +17,10 @@ customElements.define("roll-dice", class extends HTMLElement {
         let id = "id" + Math.random() * 1e18;
         this.innerHTML = `<canvas id="canvas" style="width:90vw;height:90vh"></canvas>
             <button id="roll-btn" style="zoom:2">Throw the dice</button>`;
-        INITDICE({ customElement: this, THREE, CANNON, BufferGeometryUtils });
+        Object.assign(
+            this,
+            INITDICE({ customElement: this, THREE, CANNON, BufferGeometryUtils })
+        );
         this.onclick = (e) => this.roll();
     }
     roll() {
@@ -92,7 +95,7 @@ function INITDICE({
     var alignedDiceX = [
         0, 1, 2, 3, 4,
         [-2.5, -1, 0.5, 2, 3.5],
-        6,7,
+        6, 7,
         [-4.5, -3.1, -2, -1, .25, 1.3, 2.5, 4],
     ][dicecount];
     var alignedDiceY = [4, 4, 4, 4, 4, 4.1, 4, 4, 2, 9][dicecount];
@@ -762,6 +765,9 @@ function INITDICE({
             }
         });
         render_rolling_dice();
+    }
+    return {
+        dice: diceArray,
     }
 }
 console.log("element.js loaded")

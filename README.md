@@ -4,6 +4,7 @@
 
 ```html
 <script type="module" src="https://roll-dice.github.io/element.js"></script>
+
 <roll-dice></roll-dice>
 ```
 
@@ -15,7 +16,7 @@ https://tympanus.net/codrops/2023/01/25/crafting-a-dice-roller-with-three-js-and
 
 ## &lt;roll-dice> Web Component attributes
 
-### Dice attributes
+### &lt;roll-dice> Dice attributes
 | Attribute | Description | Default | Comment |
 | --- | --- | --- | --- |
 | `dicecount` | Total number of dice to throw | `5` |
@@ -23,14 +24,14 @@ https://tympanus.net/codrops/2023/01/25/crafting-a-dice-roller-with-three-js-and
 | `dotcolor` | Color of the dots | `black` |
 | `dicehovercolor` | Dicecolor on mouseover | `beige` |
 | `diceselectedcolor` | Dicecolor for selected dice | `lightgreen` |
-### Dice Throw Attributes
+### &lt;roll-dice> Throw Attributes
 
 | Attribute | Description | Default | Comment |
 | --- | --- | --- | --- |
 | `diceimpulse` | Throw the dice | `5` | force applied to throwing dice |
 | `dicerotation` | Dice rotation | `0.6` | 0 = die drops straight down |
 
-### Physics Attributes
+### &lt;roll-dice> Physics Attributes
 | Attribute | Description | Default | Comment |
 | --- | --- | --- | --- |
 | `gravityx` | gravity Left Right | `-4` | negative = left, positive = right |
@@ -41,7 +42,7 @@ https://tympanus.net/codrops/2023/01/25/crafting-a-dice-roller-with-three-js-and
 | `nudge` | nudge force | `1` | when die get stuck, nudge it with this force |
 
 
-### Camera Attributes
+### &lt;roll-dice> Camera Attributes
 | Attribute | Description | Default | Comment |
 | --- | --- | --- | --- |
 | `cameradistance` | distance from the boardfloor | `5` |
