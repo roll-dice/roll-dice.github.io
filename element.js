@@ -37,9 +37,12 @@ customElements.define("roll-dice", class extends HTMLElement {
         }, this);
         console.warn("%c event: ", "background:purple;color:gold", name, detail);
         this.dispatchEvent(
-            new CustomEvent(this.nodeName.toLowerCase(),
+            new CustomEvent(this.nodeName.toLowerCase(), {
+                bubbles: true,
+                composed: true,
                 detail
-            )
+
+            })
         );
     }
 })
