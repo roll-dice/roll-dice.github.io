@@ -1,6 +1,6 @@
 if (location.host == "roads-technology.nl") console.log("This code is a mess, but it works");
 
-var DEBUG = 1;
+var DEBUG = 0;
 
 //import * as CANNON from './dependencies/cannon-es.js';
 // todo fix error CANNON.Vec3 is not a constructor
@@ -19,12 +19,28 @@ customElements.define("roll-dice", class extends HTMLElement {
             <button id="roll-btn" style="zoom:2">Throw the dice</button>`;
         Object.assign(
             this,
+            // assign {} return value to Web Component
+            /**
+             * dice - array
+             * roll - function
+             */
             INITDICE({ customElement: this, THREE, CANNON, BufferGeometryUtils })
         );
-        this.onclick = (e) => this.roll();
+        this.ondoubleclick = (e) => this.roll();
     }
-    roll() {
-
+    dispatch(name, detail = {}) {
+        detail = Object.assign({
+            ...detail,
+            name,
+            element: this,
+            values: () => this.dice.map(die => die.value)
+        }, this);
+        console.warn("%c event: ", "background:purple;color:gold", name, detail);
+        this.dispatchEvent(
+            new CustomEvent(this.nodeName.toLowerCase(),
+                detail
+            )
+        );
     }
 })
 
@@ -34,6 +50,7 @@ function INITDICE({
     CANNON,
     BufferGeometryUtils
 }) {
+    customElement.log = customElement.hasAttribute("log");
 
     var attr = (name, defaultValue) => customElement.getAttribute(name) || defaultValue;
     var canvas = document.querySelector('#canvas');
@@ -127,7 +144,6 @@ function INITDICE({
     var CANNON_Box = (b) => new CANNON.Box(b);
 
     var render_scene = () => {
-        //console.log("render");
         renderer.render(scene, camera);
     }
 
@@ -186,7 +202,7 @@ function INITDICE({
                             P.x = x;
                             P.y = y;
                             P.z = z;
-                            console.warn("done moveTo", body.id, "value:", this.value, "P:", P, "\n", toTarget);
+                            if (customElements.log) console.warn("done moveTo", body.id, "value:", this.value, "P:", P, "\n", toTarget);
                         }
                         render_scene()
                     }
@@ -195,7 +211,7 @@ function INITDICE({
                 toFloor: ({ y = 0, delay = 0 }) => {
                     const executeWhenNotAnimating = () => {
                         if (!this.animating) {
-                            console.error("wait for animating false", this.animating);
+                            if (customElements.log) console.error("wait for animating false", this.animating);
                             setTimeout(() => {
                                 this.moveTo({
                                     x: P.x + [-1.5, -.5, 0, 1, 2, 2.5, 3, 3.3][this.sortidx],
@@ -222,7 +238,8 @@ function INITDICE({
                         z: this.selected
                             ? 0
                             : alignedDiceZ
-                    })
+                    });
+                    customElement.dispatch('dice-selected', { selecteddice: this });
                     render_scene();
                 },
                 rotateTo: ({
@@ -231,7 +248,7 @@ function INITDICE({
                     z = R.z,
                     speed = .05
                 }) => {
-                    console.log(x, y, z);
+                    if (customElements.log) console.log(x, y, z);
                     var euler = new THREE.Euler().setFromQuaternion(M.quaternion);
                     euler.x = radians(x);
                     euler.y = radians(y);
@@ -260,7 +277,7 @@ function INITDICE({
                     A();
                 },
                 nudge: () => {
-                    console.warn("nudge", D.id);
+                    if (customElements.log) console.warn("nudge", D.id);
                     body.applyImpulse(CANNON_Vector3(
                         (Math.random() - 0.5) * nudgeMagnitude,
                         (Math.random() - 0.5) * nudgeMagnitude,
@@ -269,7 +286,7 @@ function INITDICE({
                 },
                 sleep: () => {
                     var die = this;
-                    console.log("sleep dice", body.id);
+                    if (customElements.log) console.log("sleep dice", body.id);
                     body.allowSleep = false;
                     var euler = CANNON_Vector3();
                     body.quaternion.toEuler(euler);
@@ -280,7 +297,7 @@ function INITDICE({
                     var isPiOrMinusPi = (angle) => (Math.abs(Math.PI - angle) < eps || Math.abs(Math.PI + angle) < eps);
                     var nudgeDie = (status = "") => {
                         // landed on edge => wait to fall on side and fire the event again
-                        console.warn("nudge die", body.id, status, die.value);
+                        if (customElements.log) console.warn("nudge die", body.id, status, die.value);
                         body.allowSleep = true;
                         die.nudge();
                     }
@@ -689,8 +706,9 @@ function INITDICE({
             render_scene();
             requestAnimationFrame(render_rolling_dice);
         } else {
-            console.log("done rolling", diceArray.map((dice, idx) => dice.value));
+            if (customElements.log) console.log("done rolling", diceArray.map((dice, idx) => dice.value));
             alignDice();
+            customElement.dispatch('dice-rolled');
             //d1.color = diceHighlightColor;
             //d1.select();
             // d1.toFloor({
@@ -707,7 +725,7 @@ function INITDICE({
                 die.selected = false;
                 die.color = diceColor;
                 die.sortidx = idx;
-                console.log(1, die.value, die.mesh.position);
+                if (customElements.log) console.log(idx, die.value, die.mesh.position);
                 die.moveTo({
                     // The desired Y positions for the dice, evenly spaced,
                     x: alignedDiceX[idx],
@@ -740,11 +758,12 @@ function INITDICE({
     }
 
     function throwDice() {
+        customElement.dispatch("dice-throw-start");
         var rand = () => 4 * Math.PI * Math.random();
         diceArray.forEach((die, idx) => {
             var { body, mesh } = die;
             if (!die.selected) {
-                console.log("throw", body.id);
+                if (customElements.log) console.log("throw", body.id);
                 die.rolling = true;
                 die.hitwall = false;
                 body.velocity.setZero();
@@ -768,7 +787,8 @@ function INITDICE({
     }
     return {
         dice: diceArray,
+        roll: throwDice
     }
 }
-console.log("element.js loaded")
+console.log("<roll-dice> element.js loaded")
 

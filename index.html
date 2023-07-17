@@ -15,6 +15,11 @@
 </head>
 
 <body>
+    <script>
+        window.addEventListener('roll-dice', (e) => {
+            console.log(e.detail);
+        });
+    </script>
     <roll-dice dicecount="5" showhelpers debug></roll-dice>
 </body>
 

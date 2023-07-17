@@ -48,4 +48,41 @@ https://tympanus.net/codrops/2023/01/25/crafting-a-dice-roller-with-three-js-and
 | `cameradistance` | distance from the boardfloor | `5` |
 | `cameratilt` | tilt camera backward | `1` | 0 = no tilt |
 | `cameraview` | Camera (wide) angle | `40` | higher is wider and farther away from dice
-| `camerapan` | camera pan | `0` | negative = pan left, positive = pan right
+| `camerapan` | camera pan | `0` | negative = left, positive = right
+
+## &lt;roll-dice> standard properties and methods
+
+### Properties
+
+| name | description |  
+| --- | --- |
+| `dice` | Array of all dice |
+
+### Methods
+
+| name | description |  
+| --- | --- |
+| `roll()` | roll all **unselected** dice |
+## &lt;roll-dice> dispatched Event ``roll-dice`` - standard properties
+
+| property | |  |
+| --- | --- | --- |
+| `dice` | Array of all dice |
+| `` |  |
+
+## &lt;roll-dice> dispatched Events - eventtype properties
+
+| eventtype | eventtype | properties |
+| --- | --- | --- |
+| `dice-rolled` | dice-rolled |  |
+| `dice-selected` | dice-selected | selecteddice |
+
+### Example: listen to ``roll-dice`` event
+
+````javascript
+document.addEventlistener('roll-dice', (e) => {
+  console.log(e.detail.dice);
+});
+````
+
+
