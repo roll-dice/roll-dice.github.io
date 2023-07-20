@@ -15,7 +15,7 @@ customElements.define("roll-dice", class extends HTMLElement {
     connectedCallback() {
         // create a unique ID, but using a DOM Node in the constructor would be nicer
         let id = "id" + Math.random() * 1e18;
-        this.innerHTML = `<canvas id="canvas" style="width:90vw;height:90vh"></canvas>
+        this.innerHTML = `<canvas id="canvas"></canvas>
             <button id="roll-btn" style="zoom:2">Throw the dice</button>`;
         Object.assign(
             this,
