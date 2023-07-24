@@ -6,10 +6,20 @@
 
     <style>
         body {
-            background-image: url('./background_backgammon.jpg');
+            /* background-image: url('./background_backgammon.jpg'); */
             background-repeat: no-repeat;
             background-size: cover;
-            background-position: center center;            
+            background-position: center center;
+        }
+
+        #dicecontainer canvas{
+            --width:80vw;
+            position: absolute;
+            top: 0%;
+            left: 0%;
+            width: 80vw;
+            height: calc(var(--width) / 2);
+            background: pink;
         }
     </style>
 </head>
@@ -17,10 +27,15 @@
 <body>
     <script>
         window.addEventListener('roll-dice', (e) => {
-            console.log("index.html caught event:",e.detail);
+            console.log("index.html caught event:", e.detail);
         });
     </script>
-    <roll-dice dicecount="5" showhelpers debug></roll-dice>
+    <button id="roll-btn" style="zoom:2" onclick="document.querySelector('roll-dice').roll()">Throw the dice</button>
+    <div id="dicecontainer">
+        <roll-dice dicecount="5" 
+        selectedheight="4"
+        nodebug></roll-dice>
+    </div>
 </body>
 
 </html>

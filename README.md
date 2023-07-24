@@ -43,12 +43,19 @@ https://tympanus.net/codrops/2023/01/25/crafting-a-dice-roller-with-three-js-and
 
 
 ### &lt;roll-dice> Camera Attributes
+
 | Attribute | Description | Default | Comment |
 | --- | --- | --- | --- |
 | `cameradistance` | distance from the boardfloor | `5` |
 | `cameratilt` | tilt camera backward | `1` | 0 = no tilt |
 | `cameraview` | Camera (wide) angle | `40` | higher is wider and farther away from dice
 | `camerapan` | camera pan | `0` | negative = left, positive = right
+
+## &lt;roll-dice> aligning the dice
+
+| Attribute | Description | Default | Comment |
+| --- | --- | --- | --- |
+| `aligndice` | Array in String "X,Y,Z" | based on dicecount |
 
 ## &lt;roll-dice> standard properties and methods
 

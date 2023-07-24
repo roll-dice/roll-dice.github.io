@@ -15,8 +15,7 @@ customElements.define("roll-dice", class extends HTMLElement {
     connectedCallback() {
         // create a unique ID, but using a DOM Node in the constructor would be nicer
         let id = "id" + Math.random() * 1e18;
-        this.innerHTML = `<canvas id="canvas"></canvas>
-            <button id="roll-btn" style="zoom:2">Throw the dice</button>`;
+        this.innerHTML = `<canvas id="canvas"></canvas>`;
         Object.assign(
             this,
             // assign {} return value to Web Component
@@ -55,9 +54,15 @@ function INITDICE({
 }) {
     customElement.log = customElement.hasAttribute("log");
 
-    var attr = (name, defaultValue) => customElement.getAttribute(name) || defaultValue;
+    DEBUG = customElement.hasAttribute("debug");
+
+    var attr = (name, defaultValue = false) => customElement.getAttribute(name) || defaultValue || false;
     var canvas = document.querySelector('#canvas');
     var { width: canvas_width, height: canvas_height } = canvas.getBoundingClientRect();
+    
+    // let br = (customElement.parentNode).getBoundingClientRect();
+    // canvas.setAttribute("width",br.width);
+    // canvas.setAttribute("height",br.height);
 
     var walls = [], rayLine;
 
@@ -106,20 +111,39 @@ function INITDICE({
     var wallbase = 4;
 
     // where the dice are positioned after the throw
-    var selectedDiceOffsetX = [
-        0, 1, 2, 3, 4,
-        [-1, -.5, 0, .5, 1, 1.4, 1.8, 2.2],
-        6, 7,
-        [-1, -.5, 0, .5, 1, 1.4, 1.8, 2.2],
-    ][dicecount];
-    var alignedDiceX = [
-        0, 1, 2, 3, 4,
-        [-2.5, -1, 0.5, 2, 3.5],
-        6, 7,
+    var alignlayout = 1;// 0=line 1=5
+    var alignedDiceX = [ // LEFT TO RIGHT
+        0,//0 not used, so index matches dicecount
+        1, 2, 3, 4,
+        /* 5 */[[-2.5, -1, 0.5, 2, 3.5], [-1, -1, 0.5, 2, 2]][alignlayout],
+        6, 7, 9,
         [-4.5, -3.1, -2, -1, .25, 1.3, 2.5, 4],
     ][dicecount];
-    var alignedDiceY = [4, 4, 4, 4, 4, 4.1, 4, 4, 2, 9][dicecount];
-    var alignedDiceZ = 1;
+    var alignedDiceY = [ // HEIGTH
+        0,//0 not used, so index matches dicecount
+        1, 2, 3, 4,
+        [[6, 6, 6, 6, 6], [7, 7, 7, 7, 7, 7]][alignlayout],
+        6, 7, 8, 9][dicecount];
+    var alignedDiceZ = [// TOP-BOTTOM
+        0,//0 not used, so index matches dicecount
+        1, 2, 3, 4,
+        [[1, 1, 1, 1, 1], [0.125, 2.25, 1.25, 2.25, 0.125]][alignlayout],
+        6, 7, 8, 9][dicecount];
+
+    var [alignedDiceOffsetX = 0, alignedDiceOffsetY = 0, alignedDiceOffsetZ = 0] = (attr("aligndice") || "0,0,0").split(",");
+    console.warn(alignedDiceX, alignedDiceY, alignedDiceZ, "\n", alignedDiceOffsetX);
+    alignedDiceOffsetX = Number(alignedDiceOffsetX);
+    alignedDiceOffsetY = Number(alignedDiceOffsetY);
+    alignedDiceOffsetZ = Number(alignedDiceOffsetZ);
+    var selectedDiceOffsetX = [
+        0,//0 not used, so index matches dicecount
+        1, 2, 3, 4,
+        /* 5 */[[-2.5, -1, 0.5, 2, 3.5], [-1, -1, 0.5, 2, 2]][alignlayout],
+        6, 7,
+        [-1, -.5, 0, .5, 1, 1.4, 1.8, 2.2],
+    ][dicecount];
+    //[...alignedDiceX.map(x => x + alignedDiceOffsetX)]
+    //[alignlayout]][dicecount];
 
     // physics parameters
     var body_mass = attr("mass", 1.5);
@@ -233,14 +257,18 @@ function INITDICE({
                     this.color = this.selected ? diceSelectedColor : diceColor;
                     this.moveTo({
                         x: this.selected
-                            ? P.x + selectedDiceOffsetX[this.sortidx]
+                            // ? P.x + selectedDiceOffsetX[this.sortidx]
+                            ? alignedDiceX[this.sortidx]
                             : alignedDiceX[this.sortidx],
                         y: this.selected
-                            ? 0
-                            : alignedDiceY,
+                            // ? 0 
+                            ? Number(customElement.getAttribute("selectedheight"))
+                            // ? alignedDiceY[this.sortidx]-2
+                            : alignedDiceY[this.sortidx],
                         z: this.selected
-                            ? 0
-                            : alignedDiceZ
+                            // ? 0
+                            ? alignedDiceZ[this.sortidx]
+                            : alignedDiceZ[this.sortidx]
                     });
                     customElement.dispatch('dice-selected', { selecteddice: this });
                     render_scene();
@@ -731,9 +759,9 @@ function INITDICE({
                 if (customElements.log) console.log(idx, die.value, die.mesh.position);
                 die.moveTo({
                     // The desired Y positions for the dice, evenly spaced,
-                    x: alignedDiceX[idx],
-                    y: alignedDiceY,
-                    z: alignedDiceZ
+                    x: alignedDiceX[idx] + alignedDiceOffsetX,
+                    y: alignedDiceY[idx] + alignedDiceOffsetY,
+                    z: alignedDiceZ[idx] + alignedDiceOffsetZ
                 });
                 let value = 6;
                 // let [x, y, z] = [[0, 0, 0], [90, 90, 0], [90, 180, 0], [90, 0, 0], [90, -90, 0], [0, 0, 180]][value - 1];
