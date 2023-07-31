@@ -13,13 +13,16 @@
         }
 
         #dicecontainer canvas{
-            --width:80vw;
+            --width:100vw;
             position: absolute;
-            top: 0%;
+            top: 12vh;
             left: 0%;
-            width: 80vw;
+            width: var(--width);
             height: calc(var(--width) / 2);
             background: pink;
+        }
+        button{
+            z-index: 999;
         }
     </style>
 </head>
@@ -30,12 +33,14 @@
             console.log("index.html caught event:", e.detail);
         });
     </script>
-    <button id="roll-btn" style="zoom:2" onclick="document.querySelector('roll-dice').roll()">Throw the dice</button>
     <div id="dicecontainer">
-        <roll-dice dicecount="5" 
-        selectedheight="4"
-        nodebug></roll-dice>
+        <roll-dice 
+        dicecount="5" 
+        doubleclick="true"
+        xselectedheight="5"
+        debug></roll-dice>
     </div>
+    <button id="roll-btn" style="zoom:2" onclick="document.querySelector('roll-dice').roll()">Throw the dice</button>
 </body>
 
 </html>

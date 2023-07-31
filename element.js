@@ -59,8 +59,12 @@ function INITDICE({
     var attr = (name, defaultValue = false) => customElement.getAttribute(name) || defaultValue || false;
     var canvas = document.querySelector('#canvas');
     var { width: canvas_width, height: canvas_height } = canvas.getBoundingClientRect();
-    
-    // let br = (customElement.parentNode).getBoundingClientRect();
+
+    var br = (customElement.parentNode).getBoundingClientRect();
+    var br = (canvas).getBoundingClientRect();
+    var pixels_above_canvas = br.top;
+    var pixels_leftof_canvas = br.left;
+    console.error(br.top);
     // canvas.setAttribute("width",br.width);
     // canvas.setAttribute("height",br.height);
 
@@ -447,10 +451,17 @@ function INITDICE({
     }
     // ==================================== init event listeners
     window.addEventListener('resize', updateSceneSize);
-    customElement.addEventListener('dblclick', throwDice);
-    document.querySelector('#roll-btn').onclick = throwDice;
+
+    if (customElement.hasAttribute("doubleclick")) {
+        customElement.addEventListener('dblclick', throwDice);
+    }
+    let rollButton = document.querySelector('#roll-btn');
+    if (rollButton) {
+        rollButton.onclick = throwDice;
+    }
+
     canvas.addEventListener('mousemove', (event) => {
-        checkDieSideClick(event);
+        checkDieSideHoverClick(event);
     });
     canvas.addEventListener('click', (event) => {
         if (overdice) {
@@ -476,16 +487,14 @@ function INITDICE({
         });
     }
 
-    function checkDieSideClick(event) {
-        var line;
-        var vector = THREE_Vector3(
-            (event.clientX / canvas_width) * 2 - 1,
-            -(event.clientY / canvas_height) * 2 + 1,
-            0.5
-        );
+    function checkDieSideHoverClick(event) {
+        var xvector = ((event.clientX) / canvas_width) * 2 - 1;
+        var yvector = -((event.clientY - pixels_above_canvas) / canvas_height) * 2 + 1;
+        var vector = THREE_Vector3(xvector, yvector, 0.5);
+        console.warn(event.clientX, event.clientY, canvas_width, canvas_height, xvector,yvector);
         vector.unproject(camera);
         raycaster.set(camera.position, vector.sub(camera.position).normalize());
-        var resetDIE = (d) => {
+        /* function */var resetDIE = (d) => {
             if (d) {
                 d.color = d.selected ? diceSelectedColor : diceColor;
                 d.mouseover = false;
@@ -785,7 +794,7 @@ function INITDICE({
         var bottomRight = THREE_Vector3(1, -1, 0).unproject(camera);
         var worldWidth = bottomRight.x - topLeft.x;
         var worldHeight = bottomRight.y - topLeft.y;
-        //console.warn(worldWidth, worldHeight, topLeft, bottomRight);
+        console.warn(worldWidth, worldHeight, topLeft, bottomRight);
     }
 
     function throwDice() {
@@ -823,3 +832,13 @@ function INITDICE({
 }
 console.log("<roll-dice> element.js loaded")
 
+// customElements.define("", class extends HTMLElement {
+//     constructor() {
+//         super()
+//             .attachShadow({ mode: "open" })
+//             .innerHTML = `<style></style>`;
+//     }
+//     connectedCallback() {
+//         this.innerHTML = ``;
+//     }
+// })
