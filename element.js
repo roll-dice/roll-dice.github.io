@@ -64,7 +64,6 @@ function INITDICE({
     var br = (canvas).getBoundingClientRect();
     var pixels_above_canvas = br.top;
     var pixels_leftof_canvas = br.left;
-    console.error(br.top);
     // canvas.setAttribute("width",br.width);
     // canvas.setAttribute("height",br.height);
 
@@ -135,7 +134,7 @@ function INITDICE({
         6, 7, 8, 9][dicecount];
 
     var [alignedDiceOffsetX = 0, alignedDiceOffsetY = 0, alignedDiceOffsetZ = 0] = (attr("aligndice") || "0,0,0").split(",");
-    console.warn(alignedDiceX, alignedDiceY, alignedDiceZ, "\n", alignedDiceOffsetX);
+    if (DEBUG) console.warn("aligned", alignedDiceX, alignedDiceY, alignedDiceZ, "\n", alignedDiceOffsetX);
     alignedDiceOffsetX = Number(alignedDiceOffsetX);
     alignedDiceOffsetY = Number(alignedDiceOffsetY);
     alignedDiceOffsetZ = Number(alignedDiceOffsetZ);
@@ -491,7 +490,7 @@ function INITDICE({
         var xvector = ((event.clientX) / canvas_width) * 2 - 1;
         var yvector = -((event.clientY - pixels_above_canvas) / canvas_height) * 2 + 1;
         var vector = THREE_Vector3(xvector, yvector, 0.5);
-        console.warn(event.clientX, event.clientY, canvas_width, canvas_height, xvector,yvector);
+        if (DEBUG) console.warn(event.clientX, event.clientY, canvas_width, canvas_height, xvector, yvector);
         vector.unproject(camera);
         raycaster.set(camera.position, vector.sub(camera.position).normalize());
         /* function */var resetDIE = (d) => {
@@ -794,7 +793,7 @@ function INITDICE({
         var bottomRight = THREE_Vector3(1, -1, 0).unproject(camera);
         var worldWidth = bottomRight.x - topLeft.x;
         var worldHeight = bottomRight.y - topLeft.y;
-        console.warn(worldWidth, worldHeight, topLeft, bottomRight);
+        if (DEBUG) console.warn("updateSceneSize", worldWidth, worldHeight, topLeft, bottomRight);
     }
 
     function throwDice() {
