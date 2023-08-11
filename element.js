@@ -831,13 +831,13 @@ function INITDICE({
 }
 console.log("<roll-dice> element.js loaded")
 
-// customElements.define("", class extends HTMLElement {
-//     constructor() {
-//         super()
-//             .attachShadow({ mode: "open" })
-//             .innerHTML = `<style></style>`;
-//     }
-//     connectedCallback() {
-//         this.innerHTML = ``;
-//     }
-// })
+customElements.define("my-component", class extends HTMLElement {
+    constructor() {
+        super()
+            .attachShadow({ mode: "open" })
+            .innerHTML = `<style></style>`;
+    }
+    connectedCallback() {
+        this.innerHTML = ``;
+    }
+})
