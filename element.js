@@ -118,31 +118,30 @@ function INITDICE({
     var alignedDiceX = [ // LEFT TO RIGHT
         0,//0 not used, so index matches dicecount
         [0],
-        2,
-        3,
+        [-0.75, .75],
+        [-1.2, .25, 1.7],
         [-1, -1, 1, 1],
         /* 5 */[[-2.5, -1, 0.5, 2, 3.5], [-1, -1, 0.5, 2, 2]][alignlayout],
-        6, 7, 9,
-        [-4.5, -3.1, -2, -1, .25, 1.3, 2.5, 4],
-        6,
+        [-1.75, 0, 1.7, -1.75, 0, 1.7],
     ][dicecount];
     var alignedDiceY = [ // HEIGTH
         0,//0 not used, so index matches dicecount
-        [6],
-        2,
-        3,
+        [8],
+        [6, 6],
+        [6, 6, 6],
         [6, 6, 6, 6],
         [[6, 6, 6, 6, 6], [7, 7, 7, 7, 7, 7]][alignlayout],
-        6
+        [6.5, 6.5, 6.5, 6.5, 6.5, 6.5]
     ][dicecount];
     var alignedDiceZ = [// TOP-BOTTOM
         0,//0 not used, so index matches dicecount
-        [0],
-        2,
-        3,
+        [1.5],
+        [1, 1.5],
+        [1, 1, 1],
         [-.5, 1, 1, -.5],
         [[1, 1, 1, 1, 1], [0.125, 2.25, 1.25, 2.25, 0.125]][alignlayout],
-        6][dicecount];
+        [.5, .5, .5, 2, 2, 2]
+    ][dicecount];
 
     var [alignedDiceOffsetX = 0, alignedDiceOffsetY = 0, alignedDiceOffsetZ = 0] = (attr("aligndice") || "0,0,0").split(",");
     if (DEBUG) console.warn("aligned", alignedDiceX, alignedDiceY, alignedDiceZ, "\n", alignedDiceOffsetX);
