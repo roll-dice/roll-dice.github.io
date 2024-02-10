@@ -2,6 +2,7 @@
 
 <head>
     <title>&lt;roll-dice></title>
+    <script type="module" src="https://web-component-docs.github.io/elements.js"></script>
     <script type="module" src="./element.js"></script>
 
     <style>
@@ -10,12 +11,14 @@
             background-repeat: no-repeat;
             background-size: cover;
             background-position: center center;
-            font-family: sans-serif;
+            font:14px Arial, sans-serif;
         }
-
+        
         canvas {
             background: pink;
-            width: 100%;
+            margin:0 auto;
+            width: 60vw;
+            max-height:200px; 
         }
 
         button {
@@ -26,18 +29,53 @@
 
 <body>
     <script>
+                    const createElement = (tag, props = {}) => Object.assign(document.createElement(tag), props);
         window.addEventListener('roll-dice', (e) => {
             console.log("index.html caught event:", e.detail);
         });
+                    function roll(dicecount = false) {
+                        if (dicecount) {
+                            dicecontainer.innerHTML = '';
+                            let dice = createElement('roll-dice', {});
+                            dice.setAttribute('dicecount', dicecount);
+                            dice.setAttribute('doubleclick', true);
+                            dice.setAttribute('xselectedheight', 5);
+                            dice.setAttribute('debug', true);
+                            dicecontainer.append(dice);
+                        } else {
+                            document.querySelector('roll-dice').roll();
+                        }
+                    }
     </script>
     <a href="https://github.com/roll-dice/roll-dice.github.io">GitHub</a>
-    
-    <button id="roll-btn" onclick="document.querySelector('roll-dice').roll()">Throw the dice</button>
-    <button id="roll-btn2" onclick="document.querySelector('roll-dice').roll()">2</button>
+
+    <button onclick="roll()">Throw the dice</button>
+    <button onclick="roll(this.innerText)">2</button>
+    <button onclick="roll(this.innerText)">3</button>
+    <button onclick="roll(this.innerText)">4</button>
+    <button onclick="roll(this.innerText)">5</button>
 
     <div id="dicecontainer">
         <roll-dice dicecount="1" doubleclick="true" xselectedheight="5" debug></roll-dice>
     </div>
+    <web-component-attributes component="roll-dice">
+        dicecount=5 | number of dice on Element creation | 5
+        doubleclick=true | roll dice on doubleclick | false
+        debug | show 3D environment
+        dicecolor | color of dice | white
+        dotcolor | color of dots | black
+        diceselectcolor | color of selected dice | lightgreen
+        dicehovercolor | color of hovered dice | beige
+        aligndice | align dice to center |
+        mass | mass of dice | 1.5
+        gravityx | gravity on x-axis right-to-left | -4
+        gravityy | gravity on y-axis downward | 50
+        gravityz | gravity on z-axis forward | 0
+        diceimpulse | force to throw dice | 5
+        dicerotation | rotation of dice | 0.6
+        restitution | bounce of dice | 0.6
+    </web-component-attributes>
+
 </body>
 
 </html>
