@@ -125,7 +125,7 @@ function INITDICE({
         [-1.75, 0, 1.7, -1.75, 0, 1.7],
     ][dicecount];
     //changed the alignedicey to listen to 1 heigth thats changable with attr
-    var alignedDiceY = attr('alignDiceY', 6);
+    var alignedDiceY = +attr('alignDiceY', 6);
     // var alignedDiceY = [ // HEIGTH
     //     0,//0 not used, so index matches dicecount
     //     [8],
@@ -137,7 +137,7 @@ function INITDICE({
     // ][dicecount];
     var alignedDiceZ = [// TOP-BOTTOM
         0,//0 not used, so index matches dicecount
-        [1.5],
+        [0],
         [1, 1.5],
         [1, 1, 1],
         [-.5, 1, 1, -.5],
