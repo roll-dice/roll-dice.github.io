@@ -124,15 +124,17 @@ function INITDICE({
         /* 5 */[[-2.5, -1, 0.5, 2, 3.5], [-1, -1, 0.5, 2, 2]][alignlayout],
         [-1.75, 0, 1.7, -1.75, 0, 1.7],
     ][dicecount];
-    var alignedDiceY = [ // HEIGTH
-        0,//0 not used, so index matches dicecount
-        [8],
-        [6, 6],
-        [6, 6, 6],
-        [6, 6, 6, 6],
-        [[6, 6, 6, 6, 6], [7, 7, 7, 7, 7, 7]][alignlayout],
-        [6.5, 6.5, 6.5, 6.5, 6.5, 6.5]
-    ][dicecount];
+    //changed the alignedicey to listen to 1 heigth thats changable with attr
+    var alignedDiceY = attr('alignDiceY', 6);
+    // var alignedDiceY = [ // HEIGTH
+    //     0,//0 not used, so index matches dicecount
+    //     [8],
+    //     [6, 6],
+    //     [6, 6, 6],
+    //     [6, 6, 6, 6],
+    //     [[6, 6, 6, 6, 6], [7, 7, 7, 7, 7, 7]][alignlayout],
+    //     [6.5, 6.5, 6.5, 6.5, 6.5, 6.5]
+    // ][dicecount];
     var alignedDiceZ = [// TOP-BOTTOM
         0,//0 not used, so index matches dicecount
         [1.5],
@@ -277,7 +279,8 @@ function INITDICE({
                             // ? 0 
                             ? Number(customElement.getAttribute("selectedheight"))
                             // ? alignedDiceY[this.sortidx]-2
-                            : alignedDiceY[this.sortidx],
+                            // : alignedDiceY[this.sortidx],
+                            : alignedDiceY,
                         z: this.selected
                             // ? 0
                             ? alignedDiceZ[this.sortidx]
@@ -778,7 +781,8 @@ function INITDICE({
                 die.moveTo({
                     // The desired Y positions for the dice, evenly spaced,
                     x: alignedDiceX[idx] + alignedDiceOffsetX,
-                    y: alignedDiceY[idx] + alignedDiceOffsetY,
+                    // y: alignedDiceY[idx] + alignedDiceOffsetY,
+                    y: alignedDiceY + alignedDiceOffsetY,
                     z: alignedDiceZ[idx] + alignedDiceOffsetZ
                 });
                 let value = 6;
