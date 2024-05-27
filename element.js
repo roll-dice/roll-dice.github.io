@@ -34,7 +34,7 @@ customElements.define("roll-dice", class extends HTMLElement {
             element: this,
             values: () => this.dice.map(die => die.value)
         }, this);
-        console.warn("%c event: ", "background:purple;color:gold", name, detail);
+        // console.warn("%c event: ", "background:purple;color:gold", name, detail);
         this.dispatchEvent(
             new CustomEvent(this.nodeName.toLowerCase(), {
                 bubbles: true,
